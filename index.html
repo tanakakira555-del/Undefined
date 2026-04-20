@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undefined. — 感情残滓ノベル</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400&family=Noto+Sans+JP:wght@300;400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;font-family:'Noto Serif JP',serif;background:#0a0e14;overflow:hidden;user-select:none;}
+
+/* ── STAGE ── */
+#stage{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;}
+
+#bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:opacity 0.5s ease;}
+
+#fade{position:absolute;inset:0;background:#0a0e14;opacity:0;pointer-events:none;transition:opacity 0.65s ease;z-index:40;}
+#fade.active{opacity:1;}
+
+/* ── PROGRESS ── */
+#progress{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(140,165,185,0.1);z-index:6;pointer-events:none;}
+#progress-fill{height:100%;background:linear-gradient(90deg,rgba(120,160,190,0.3),rgba(160,200,220,0.5));width:0%;transition:width 0.4s ease;}
+
+/* ── SCENE LABEL ── */
+#scene-label{position:absolute;top:1.8rem;left:50%;transform:translateX(-50%);font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.58rem;letter-spacing:0.45em;color:rgba(160,185,205,0.5);opacity:0;transition:opacity 0.8s ease;white-space:nowrap;z-index:5;pointer-events:none;}
+#scene-label.show{opacity:1;}
+
+/* ── CHAPTER LABEL ── */
+#chapter-label{position:absolute;top:3.2rem;left:50%;transform:translateX(-50%);font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.5rem;letter-spacing:0.4em;color:rgba(140,165,185,0.35);opacity:0;transition:opacity 0.8s ease;white-space:nowrap;z-index:5;pointer-events:none;}
+#chapter-label.show{opacity:1;}
+
+/* ── SPRITES ── */
+#sprite-left,#sprite-right{position:absolute;bottom:160px;width:360px;max-width:40vw;object-fit:contain;object-position:bottom;transition:opacity 0.45s ease,filter 0.45s ease;pointer-events:none;z-index:3;}
+#sprite-left{left:3%;}
+#sprite-right{right:3%;}
+.sprite-hidden{opacity:0!important;}
+.sprite-dim{opacity:0.38!important;filter:brightness(0.65) saturate(0.4);}
+
+/* ── MENU BUTTON ── */
+#menu-btn{position:absolute;top:1.2rem;right:1.5rem;z-index:15;background:rgba(20,25,35,0.6);border:1px solid rgba(160,185,205,0.2);color:rgba(160,185,205,0.6);font-family:'Noto Sans JP',sans-serif;font-size:0.55rem;letter-spacing:0.3em;padding:0.3rem 0.8rem;cursor:pointer;transition:all 0.3s ease;backdrop-filter:blur(4px);}
+#menu-btn:hover{color:rgba(190,210,225,0.9);border-color:rgba(160,185,205,0.4);}
+
+/* ── TEXT WINDOW ── */
+#textbox{position:relative;width:min(800px,94%);margin-bottom:2rem;z-index:10;opacity:0;transition:opacity 0.4s ease;}
+#textbox.show{opacity:1;}
+
+#nameplate{display:inline-flex;align-items:center;padding:0.28rem 1rem 0.28rem 0.8rem;margin-bottom:0.35rem;font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.72rem;letter-spacing:0.22em;background:rgba(235,240,248,0.85);backdrop-filter:blur(6px);border-left:2px solid rgba(100,140,170,0.6);color:rgba(50,75,105,0.9);min-height:1.5rem;opacity:0;transition:opacity 0.3s ease;}
+#nameplate.show{opacity:1;}
+#nameplate.yui{border-left-color:rgba(80,120,100,0.6);color:rgba(45,80,65,0.9);}
+#nameplate.sys-name{border-left-color:rgba(130,145,160,0.3);color:rgba(90,110,130,0.6);font-size:0.55rem;letter-spacing:0.4em;}
+
+#textwindow{background:rgba(240,245,252,0.88);backdrop-filter:blur(16px);border:1px solid rgba(180,200,218,0.35);border-radius:2px;padding:1.5rem 2rem 1.4rem;min-height:115px;position:relative;box-shadow:0 4px 28px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.85);}
+
+#text-content{font-size:0.9rem;line-height:2.1;letter-spacing:0.07em;color:#282e38;white-space:pre-wrap;min-height:3rem;}
+#text-content.narr{color:#38424f;font-style:italic;}
+#text-content.rei{color:#243040;}
+#text-content.yui{color:#2e3f38;}
+#text-content.sys{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.75rem;letter-spacing:0.14em;color:rgba(80,105,128,0.8);font-style:normal;}
+
+#click-hint{position:absolute;bottom:0.65rem;right:1rem;font-size:0.5rem;letter-spacing:0.2em;font-family:'Noto Sans JP',sans-serif;color:rgba(130,155,178,0.5);animation:blink 2s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:0.4;}50%{opacity:1;}}
+
+/* ── AUTO INDICATOR ── */
+#auto-indicator{position:absolute;bottom:0.65rem;left:1rem;font-size:0.48rem;letter-spacing:0.25em;font-family:'Noto Sans JP',sans-serif;color:rgba(130,175,140,0.7);display:none;}
+#auto-indicator.show{display:block;}
+
+/* ══════════════════════════════════
+   TITLE SCREEN
+══════════════════════════════════ */
+#title-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;z-index:50;opacity:1;transition:opacity 0.8s ease;background:linear-gradient(160deg,#0d1520 0%,#0a1018 100%);}
+#title-screen.hidden{opacity:0;pointer-events:none;}
+
+.title-bg-overlay{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(60,100,140,0.15) 0%,transparent 70%);}
+
+.title-content{position:relative;display:flex;flex-direction:column;align-items:center;gap:1.2rem;}
+.title-eyecatch{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.6rem;letter-spacing:0.6em;color:rgba(140,170,195,0.4);margin-bottom:0.5rem;}
+.title-main{font-size:3rem;font-weight:300;letter-spacing:0.25em;color:rgba(215,228,240,0.92);text-align:center;line-height:1.4;}
+.title-sub-en{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.6rem;letter-spacing:0.5em;color:rgba(140,165,188,0.45);margin-top:0.3rem;}
+.title-divider{width:50px;height:1px;background:rgba(140,170,195,0.2);margin:1.5rem 0;}
+
+.title-menu{display:flex;flex-direction:column;align-items:center;gap:0.6rem;margin-top:0.5rem;}
+.title-btn{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.68rem;letter-spacing:0.4em;color:rgba(160,185,205,0.55);background:transparent;border:none;cursor:pointer;padding:0.4rem 1.5rem;transition:all 0.3s ease;position:relative;}
+.title-btn::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:0;height:1px;background:rgba(160,185,205,0.4);transition:width 0.3s ease;}
+.title-btn:hover{color:rgba(200,220,235,0.9);}
+.title-btn:hover::before{width:100%;}
+.title-version{position:absolute;bottom:1.5rem;right:2rem;font-family:'Noto Sans JP',sans-serif;font-size:0.5rem;letter-spacing:0.3em;color:rgba(100,125,148,0.3);}
+.title-credit{position:absolute;bottom:1.5rem;left:2rem;font-family:'Noto Sans JP',sans-serif;font-size:0.5rem;letter-spacing:0.3em;color:rgba(100,125,148,0.35);line-height:1.8;}
+
+/* ══════════════════════════════════
+   OVERLAY PANELS (Menu/Save/Load/Config/Log)
+══════════════════════════════════ */
+.overlay{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(8,12,20,0.75);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
+.overlay.show{opacity:1;pointer-events:all;}
+
+.panel{background:rgba(18,24,36,0.96);border:1px solid rgba(140,170,195,0.15);width:min(480px,88%);max-height:80vh;overflow-y:auto;padding:2rem;}
+.panel-title{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.65rem;letter-spacing:0.5em;color:rgba(140,170,195,0.5);margin-bottom:1.5rem;text-align:center;}
+.panel-close{position:absolute;top:1rem;right:1.5rem;font-family:'Noto Sans JP',sans-serif;font-size:0.55rem;letter-spacing:0.3em;color:rgba(140,170,195,0.4);cursor:pointer;background:none;border:none;transition:color 0.2s;}
+.panel-close:hover{color:rgba(200,220,235,0.8);}
+
+/* Save/Load slots */
+.save-slots{display:flex;flex-direction:column;gap:0.6rem;}
+.save-slot{display:flex;align-items:center;gap:1rem;padding:0.8rem 1rem;border:1px solid rgba(140,170,195,0.12);cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.02);}
+.save-slot:hover{border-color:rgba(140,170,195,0.3);background:rgba(255,255,255,0.05);}
+.slot-num{font-family:'Noto Sans JP',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:rgba(140,170,195,0.4);min-width:2rem;}
+.slot-info{flex:1;}
+.slot-scene{font-family:'Noto Sans JP',sans-serif;font-size:0.65rem;letter-spacing:0.1em;color:rgba(200,215,228,0.7);}
+.slot-date{font-family:'Noto Sans JP',sans-serif;font-size:0.52rem;letter-spacing:0.1em;color:rgba(140,165,185,0.4);margin-top:0.2rem;}
+.slot-empty{font-family:'Noto Sans JP',sans-serif;font-size:0.6rem;letter-spacing:0.3em;color:rgba(100,125,148,0.35);}
+.slot-delete{font-family:'Noto Sans JP',sans-serif;font-size:0.5rem;color:rgba(180,100,100,0.4);cursor:pointer;padding:0.2rem 0.4rem;background:none;border:none;transition:color 0.2s;}
+.slot-delete:hover{color:rgba(220,120,120,0.7);}
+
+/* Config */
+.config-row{display:flex;align-items:center;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid rgba(140,170,195,0.08);}
+.config-label{font-family:'Noto Sans JP',sans-serif;font-size:0.62rem;letter-spacing:0.2em;color:rgba(160,185,205,0.6);}
+.config-control{display:flex;align-items:center;gap:0.8rem;}
+input[type=range]{-webkit-appearance:none;width:120px;height:2px;background:rgba(140,170,195,0.2);outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:rgba(140,170,195,0.6);border-radius:50%;cursor:pointer;}
+.config-val{font-family:'Noto Sans JP',sans-serif;font-size:0.58rem;color:rgba(140,170,195,0.5);min-width:2rem;text-align:right;}
+
+/* Backlog */
+#backlog-list{display:flex;flex-direction:column;gap:0.8rem;max-height:60vh;overflow-y:auto;}
+.log-entry{padding:0.6rem 0;border-bottom:1px solid rgba(140,170,195,0.07);}
+.log-name{font-family:'Noto Sans JP',sans-serif;font-size:0.6rem;letter-spacing:0.2em;color:rgba(140,170,195,0.5);margin-bottom:0.3rem;}
+.log-text{font-size:0.8rem;line-height:1.9;letter-spacing:0.06em;color:rgba(190,205,218,0.7);}
+.log-text.narr{font-style:italic;color:rgba(170,188,205,0.6);}
+
+/* Menu panel */
+.menu-items{display:flex;flex-direction:column;align-items:center;gap:0.5rem;}
+.menu-item{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.65rem;letter-spacing:0.4em;color:rgba(160,185,205,0.55);background:transparent;border:none;cursor:pointer;padding:0.5rem 2rem;transition:color 0.2s;width:100%;text-align:center;}
+.menu-item:hover{color:rgba(200,220,235,0.9);}
+.menu-item.danger{color:rgba(200,120,120,0.5);}
+.menu-item.danger:hover{color:rgba(220,140,140,0.8);}
+.menu-divider{width:40px;height:1px;background:rgba(140,170,195,0.12);margin:0.3rem 0;}
+
+/* ── END SCREEN ── */
+#end-screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;opacity:0;pointer-events:none;transition:opacity 2s ease;z-index:35;background:rgba(8,12,18,0.9);}
+#end-screen.show{opacity:1;pointer-events:all;}
+.end-sub{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.58rem;letter-spacing:0.5em;color:rgba(140,165,188,0.4);}
+.end-line{width:30px;height:1px;background:rgba(160,185,205,0.2);}
+.end-title{font-size:1.2rem;font-weight:300;letter-spacing:0.25em;color:rgba(195,212,228,0.75);}
+.end-quote{font-size:0.75rem;font-weight:300;letter-spacing:0.1em;color:rgba(160,182,200,0.45);font-style:italic;max-width:400px;text-align:center;line-height:2;margin-top:0.5rem;}
+#to-title-btn{margin-top:2rem;padding:0.45rem 1.8rem;font-family:'Noto Sans JP',sans-serif;font-size:0.58rem;letter-spacing:0.38em;color:rgba(140,165,188,0.45);background:transparent;border:1px solid rgba(140,165,188,0.15);cursor:pointer;transition:all 0.3s ease;}
+#to-title-btn:hover{color:rgba(180,205,222,0.75);border-color:rgba(160,185,205,0.3);}
+
+/* ── CHAPTER TITLE CARD ── */
+#chapter-card{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8rem;opacity:0;pointer-events:none;transition:opacity 0.8s ease;z-index:20;background:rgba(8,12,20,0.85);}
+#chapter-card.show{opacity:1;}
+.cc-num{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.6rem;letter-spacing:0.6em;color:rgba(140,170,195,0.45);}
+.cc-title{font-size:1.4rem;font-weight:300;letter-spacing:0.2em;color:rgba(210,225,240,0.85);}
+.cc-line{width:40px;height:1px;background:rgba(140,170,195,0.2);}
+.cc-end{font-family:'Noto Sans JP',sans-serif;font-weight:300;font-size:0.55rem;letter-spacing:0.5em;color:rgba(140,170,195,0.4);margin-top:0.5rem;}
+</style>
+</head>
+<body>
+
+<!-- STAGE -->
+<div id="stage">
+  <div id="bg"></div>
+  <div id="progress"><div id="progress-fill"></div></div>
+  <div id="fade"></div>
+  <div id="scene-label"></div>
+  <div id="chapter-label"></div>
+
+  <!-- スプライト -->
+  <img id="sprite-left"  src="" alt="" class="sprite-hidden">
+  <img id="sprite-right" src="" alt="" class="sprite-hidden">
+
+  <!-- メニューボタン -->
+  <button id="menu-btn" onclick="showOverlay('menu-overlay')">M E N U</button>
+
+  <!-- テキストボックス -->
+  <div id="textbox">
+    <div id="nameplate"></div>
+    <div id="textwindow">
+      <div id="text-content"></div>
+      <div id="click-hint">▽</div>
+      <div id="auto-indicator">A U T O</div>
+    </div>
+  </div>
+
+  <!-- チャプタータイトルカード -->
+  <div id="chapter-card">
+    <div class="cc-num" id="cc-num"></div>
+    <div class="cc-line"></div>
+    <div class="cc-title" id="cc-title"></div>
+    <div class="cc-end" id="cc-end"></div>
+  </div>
+
+  <!-- エンドスクリーン -->
+  <div id="end-screen">
+    <div class="end-sub">— 終 —</div>
+    <div class="end-line"></div>
+    <div class="end-title">Undefined.</div>
+    <div class="end-quote">やさしい檻の外へ。<br>零は手を伸ばした。</div>
+    <button id="to-title-btn" onclick="goTitle()">タイトルへ戻る</button>
+  </div>
+</div>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <div class="title-bg-overlay"></div>
+  <div class="title-content">
+    <div class="title-main">Undefined.</div>
+    <div class="title-divider"></div>
+    <div class="title-menu">
+      <button class="title-btn" onclick="startGame()">は じ め か ら</button>
+      <button class="title-btn" onclick="showOverlay('load-overlay')">ロ ー ド</button>
+      <button class="title-btn" onclick="showOverlay('config-overlay')">設 定</button>
+    </div>
+  </div>
+  <div class="title-credit">作　　者　　宵 町 詞<br><span style="font-size:0.45rem;letter-spacing:0.3em;margin-top:0.3rem;display:block;">BGM : Suno AI</span></div>
+  <div class="title-version">ver 1.0</div>
+</div>
+
+<!-- MENU OVERLAY -->
+<div class="overlay" id="menu-overlay">
+  <div class="panel" style="position:relative;">
+    <button class="panel-close" onclick="hideOverlay('menu-overlay')">× 閉じる</button>
+    <div class="panel-title">M E N U</div>
+    <div class="menu-items">
+      <button class="menu-item" onclick="hideOverlay('menu-overlay')">ゲームに戻る</button>
+      <div class="menu-divider"></div>
+      <button class="menu-item" onclick="switchToSave()">セーブ</button>
+      <button class="menu-item" onclick="switchToLoad()">ロード</button>
+      <div class="menu-divider"></div>
+      <button class="menu-item" onclick="showOverlay('log-overlay');hideOverlay('menu-overlay')">バックログ</button>
+      <button class="menu-item" onclick="showOverlay('config-overlay');hideOverlay('menu-overlay')">設定</button>
+      <div class="menu-divider"></div>
+      <button class="menu-item danger" onclick="goTitle()">タイトルへ戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVE OVERLAY -->
+<div class="overlay" id="save-overlay">
+  <div class="panel" style="position:relative;">
+    <button class="panel-close" onclick="hideOverlay('save-overlay')">× 閉じる</button>
+    <div class="panel-title">S A V E</div>
+    <div class="save-slots" id="save-slots"></div>
+  </div>
+</div>
+
+<!-- LOAD OVERLAY -->
+<div class="overlay" id="load-overlay">
+  <div class="panel" style="position:relative;">
+    <button class="panel-close" onclick="hideOverlay('load-overlay')">× 閉じる</button>
+    <div class="panel-title">L O A D</div>
+    <div class="save-slots" id="load-slots"></div>
+  </div>
+</div>
+
+<!-- CONFIG OVERLAY -->
+<div class="overlay" id="config-overlay">
+  <div class="panel" style="position:relative;">
+    <button class="panel-close" onclick="hideOverlay('config-overlay')">× 閉じる</button>
+    <div class="panel-title">S E T T I N G S</div>
+    <div class="config-row">
+      <div class="config-label">BGM 音量</div>
+      <div class="config-control">
+        <input type="range" id="bgm-vol" min="0" max="100" value="45" oninput="setBgmVol(this.value)">
+        <div class="config-val" id="bgm-vol-val">45</div>
+      </div>
+    </div>
+    <div class="config-row">
+      <div class="config-label">テキスト速度</div>
+      <div class="config-control">
+        <input type="range" id="text-speed" min="1" max="5" value="3" oninput="setTextSpeed(this.value)">
+        <div class="config-val" id="text-speed-val">3</div>
+      </div>
+    </div>
+    <div class="config-row">
+      <div class="config-label">オート速度</div>
+      <div class="config-control">
+        <input type="range" id="auto-speed" min="1" max="5" value="3" oninput="setAutoSpeed(this.value)">
+        <div class="config-val" id="auto-speed-val">3</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BACKLOG OVERLAY -->
+<div class="overlay" id="log-overlay">
+  <div class="panel" style="position:relative;width:min(600px,92%);">
+    <button class="panel-close" onclick="hideOverlay('log-overlay')">× 閉じる</button>
+    <div class="panel-title">B A C K L O G</div>
+    <div id="backlog-list"></div>
+  </div>
+</div>
+
+<audio id="bgm" loop></audio>
+
+<script>
+// ════════════════════════════════════════
+//  ASSET PATHS（全部ルート直下）
+// ════════════════════════════════════════
+const IMG = {
+  bg_office:       'bg_office.png',
+  bg_lounge:       'bg_lounge.png',
+  bg_corridor:     'bg_corridor.png',
+  bg_abstract:     'bg_abstract.png',
+  bg_office_night: 'bg_office_night.png',
+  bg_core:         'bg_core.png',
+  bg_smoking:      'bg_smoking.png',
+  rei_normal:      'rei_normal.png',
+  rei_cold:        'rei_cold.png',
+  rei_confused:    'rei_confused.png',
+  rei_emotional:   'rei_emotional.png',
+  rei_eyes_down:   'rei_eyes_down.png',
+  rei_shaken:      'rei_shaken.png',
+  rei_determined:  'rei_determined.png',
+  yui_neutral:        'yui_neutral.png',
+  yui_normal_smile:   'yui_normal_smile.png',
+  yui_seeing_through: 'yui_seeing_through.png',
+  yui_slightly_sad:   'yui_slightly_sad.png',
+  yui_soft_smile:     'yui_soft_smile.png',
+  yui_very_sad:       'yui_very_sad.png',
+  yui_pained:         'yui_pained.png',
+  yui_tearful_smile:  'yui_tearful_smile.png',
+};
+
+const BGM_SRC = {
+  title:   'bgm_title.mp3',
+  office:  'bgm_office.mp3',
+  yui:     'bgm_yui.mp3',
+  smoking: 'bgm_smoking.mp3',
+  core:    'bgm_core.mp3',
+  end:     'bgm_end.mp3',
+};
+
+// ════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════
+let config = { bgmVol: 0.45, textSpeed: 3, autoSpeed: 3 };
+
+function setBgmVol(v) {
+  config.bgmVol = v / 100;
+  bgmEl.volume = config.bgmVol;
+  document.getElementById('bgm-vol-val').textContent = v;
+  saveConfig();
+}
+function setTextSpeed(v) {
+  config.textSpeed = parseInt(v);
+  document.getElementById('text-speed-val').textContent = v;
+  saveConfig();
+}
+function setAutoSpeed(v) {
+  config.autoSpeed = parseInt(v);
+  document.getElementById('auto-speed-val').textContent = v;
+  saveConfig();
+}
+function saveConfig() {
+  try { localStorage.setItem('undefined_config', JSON.stringify(config)); } catch(e){}
+}
+function loadConfig() {
+  try {
+    const c = JSON.parse(localStorage.getItem('undefined_config') || '{}');
+    if (c.bgmVol !== undefined) config.bgmVol = c.bgmVol;
+    if (c.textSpeed) config.textSpeed = c.textSpeed;
+    if (c.autoSpeed) config.autoSpeed = c.autoSpeed;
+    document.getElementById('bgm-vol').value = Math.round(config.bgmVol * 100);
+    document.getElementById('bgm-vol-val').textContent = Math.round(config.bgmVol * 100);
+    document.getElementById('text-speed').value = config.textSpeed;
+    document.getElementById('text-speed-val').textContent = config.textSpeed;
+    document.getElementById('auto-speed').value = config.autoSpeed;
+    document.getElementById('auto-speed-val').textContent = config.autoSpeed;
+  } catch(e){}
+}
+
+// ════════════════════════════════════════
+//  BGM
+// ════════════════════════════════════════
+const bgmEl = document.getElementById('bgm');
+let currentBgm = null;
+
+function playBgm(key) {
+  if (!key || currentBgm === key) return;
+  const src = BGM_SRC[key];
+  if (!src) return;
+  currentBgm = key;
+  bgmEl.src = src;
+  bgmEl.volume = config.bgmVol;
+  bgmEl.play().catch(()=>{});
+}
+function stopBgm() { bgmEl.pause(); bgmEl.src = ''; currentBgm = null; }
+
+// ════════════════════════════════════════
+//  SPRITES
+// ════════════════════════════════════════
+const sprLeft  = document.getElementById('sprite-left');
+const sprRight = document.getElementById('sprite-right');
+
+function setSprite(side, key, dim=false) {
+  const el = side === 'left' ? sprLeft : sprRight;
+  if (!key) { el.classList.add('sprite-hidden'); el.classList.remove('sprite-dim'); return; }
+  el.src = IMG[key] || '';
+  el.classList.remove('sprite-hidden');
+  el.classList.toggle('sprite-dim', dim);
+}
+function clearSprites() {
+  sprLeft.classList.add('sprite-hidden');
+  sprRight.classList.add('sprite-hidden');
+}
+
+// ════════════════════════════════════════
+//  SAVE / LOAD
+// ════════════════════════════════════════
+const SAVE_SLOTS = 5;
+
+function getSaveData() {
+  try { return JSON.parse(localStorage.getItem('undefined_saves') || '{}'); } catch(e){ return {}; }
+}
+function writeSaveData(data) {
+  try { localStorage.setItem('undefined_saves', JSON.stringify(data)); } catch(e){}
+}
+
+function doSave(slot) {
+  const saves = getSaveData();
+  const step = script[idx];
+  saves[slot] = {
+    idx,
+    scene: sceneEl.textContent || '—',
+    chapter: chapterLabelEl.textContent || '',
+    text: (step && step.text) ? step.text.slice(0, 30) + '…' : '—',
+    date: new Date().toLocaleString('ja-JP', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),
+  };
+  writeSaveData(saves);
+  renderSaveSlots();
+  renderLoadSlots();
+}
+
+function doLoad(slot) {
+  const saves = getSaveData();
+  const s = saves[slot];
+  if (!s) return;
+  hideOverlay('load-overlay');
+  hideOverlay('save-overlay');
+  idx = s.idx;
+  started = true;
+  busy = false;
+  autoMode = false;
+  document.getElementById('auto-indicator').classList.remove('show');
+  backlog = [];
+  titleEl.classList.add('hidden');
+  endEl.classList.remove('show');
+  fadeEl.classList.add('active');
+  setTimeout(async () => {
+    setProgress();
+    await applyStep(script[idx]);
+    fadeEl.classList.remove('active');
+  }, 300);
+}
+
+function doDeleteSave(slot) {
+  const saves = getSaveData();
+  delete saves[slot];
+  writeSaveData(saves);
+  renderSaveSlots();
+  renderLoadSlots();
+}
+
+function renderSaveSlots() {
+  const saves = getSaveData();
+  const container = document.getElementById('save-slots');
+  container.innerHTML = '';
+  for (let i = 1; i <= SAVE_SLOTS; i++) {
+    const s = saves[i];
+    const div = document.createElement('div');
+    div.className = 'save-slot';
+    div.onclick = () => doSave(i);
+    div.innerHTML = `
+      <div class="slot-num">0${i}</div>
+      <div class="slot-info">
+        ${s ? `<div class="slot-scene">${s.scene}</div><div class="slot-date">${s.date} — ${s.text}</div>` : '<div class="slot-empty">— 空き —</div>'}
+      </div>
+      ${s ? `<button class="slot-delete" onclick="event.stopPropagation();doDeleteSave(${i})">削除</button>` : ''}
+    `;
+    container.appendChild(div);
+  }
+}
+
+function renderLoadSlots() {
+  const saves = getSaveData();
+  const container = document.getElementById('load-slots');
+  container.innerHTML = '';
+  for (let i = 1; i <= SAVE_SLOTS; i++) {
+    const s = saves[i];
+    const div = document.createElement('div');
+    div.className = 'save-slot';
+    if (s) div.onclick = () => doLoad(i);
+    div.innerHTML = `
+      <div class="slot-num">0${i}</div>
+      <div class="slot-info">
+        ${s ? `<div class="slot-scene">${s.scene}</div><div class="slot-date">${s.date} — ${s.text}</div>` : '<div class="slot-empty">— 空き —</div>'}
+      </div>
+      ${s ? `<button class="slot-delete" onclick="event.stopPropagation();doDeleteSave(${i})">削除</button>` : ''}
+    `;
+    container.appendChild(div);
+  }
+}
+
+function switchToSave() {
+  hideOverlay('menu-overlay');
+  renderSaveSlots();
+  showOverlay('save-overlay');
+}
+function switchToLoad() {
+  hideOverlay('menu-overlay');
+  renderLoadSlots();
+  showOverlay('load-overlay');
+}
+
+// ════════════════════════════════════════
+//  BACKLOG
+// ════════════════════════════════════════
+let backlog = [];
+const MAX_LOG = 100;
+
+function addLog(name, text, type) {
+  backlog.push({ name, text, type });
+  if (backlog.length > MAX_LOG) backlog.shift();
+}
+
+function renderBacklog() {
+  const container = document.getElementById('backlog-list');
+  container.innerHTML = '';
+  [...backlog].reverse().forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `
+      ${entry.name ? `<div class="log-name">${entry.name}</div>` : ''}
+      <div class="log-text ${entry.type === 'narr' ? 'narr' : ''}">${entry.text.replace(/\n/g,'<br>')}</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════
+//  OVERLAY
+// ════════════════════════════════════════
+function showOverlay(id) {
+  if (id === 'log-overlay') renderBacklog();
+  document.getElementById(id).classList.add('show');
+}
+function hideOverlay(id) {
+  document.getElementById(id).classList.remove('show');
+}
+
+// ════════════════════════════════════════
+//  SCRIPT — 全章
+// ════════════════════════════════════════
+// type: narr|rei|yui|sys|fade-out|fade-in|chapter|end
+// bg: bg key  bgm: bgm key  scene: label
+// left/right: sprite key  leftDim/rightDim: bool
+
+const script = [
+
+// ══ 第一章 ══════════════════════════════
+{ type:'chapter', num:'第 一 章', title:'触れすぎた心' },
+{ type:'fade-in', bg:'bg_office', scene:'感情安定管理局　第七監査室', chapter:'第一章　触れすぎた心', bgm:'office' },
+
+{ type:'narr', text:'朝の点検ログは、いつも同じような顔をしている。', left:'rei_cold', right:null },
+{ type:'narr', text:'白を基調とした執務室には、整えられた静けさが満ちている。\n壁面の光源は柔らかく、余計な陰影を落とさない。', left:'rei_cold', right:null },
+{ type:'narr', text:'すべてが整っている。\nそれがこの都市の、美点だった。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'この都市では、感情の安定は個人の資質ではなかった。\n強すぎる悲嘆、慢性的な不安、持続する怒り——\nそうした揺れは、観測し、支え、必要に応じて補正するべき公共状態として扱われていた。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'感情の補正は、特別な治療ではない。\nこの社会ではもう、医療や福祉や空調と同じように、生活を保つための静かなインフラとして受け入れられている。', left:'rei_cold', right:null },
+{ type:'narr', text:'安曇零は、端末に表示された波形を、黙って順に追っていた。\nそれが、仕事だった。', left:'rei_cold', right:null },
+
+{ type:'sys', text:'隣席から、声が飛ぶ。', left:'rei_cold', right:null },
+{ type:'rei', name:'同僚', text:'安曇監査官、昨日の補正再評価分、第三区画まで確認済みです。', left:'rei_cold', right:null },
+{ type:'rei', name:'安曇　零', text:'ありがとうございます。こちらで引き継ぎます。', left:'rei_cold', right:null },
+{ type:'rei', name:'同僚', text:'今朝の全体安定指数、かなり良かったですね。今週は再補正件数も少なそうですし。', left:'rei_cold', right:null },
+{ type:'rei', name:'安曇　零', text:'そうですね。', left:'rei_cold', right:null },
+{ type:'narr', text:'柔らかい、感情を荒立てない言い方。\nそれが癖になったのはいつからだったか、もう覚えていない。', left:'rei_eyes_down', right:null },
+
+{ type:'narr', text:'画面の右下で、未確認案件が一件だけ明滅していた。\n担当自動判定が保留のまま、止まっている。', left:'rei_cold', right:null },
+{ type:'narr', text:'珍しいことではない。\nそれなのに、零はその案件番号を見た瞬間——なぜか指を止めた。', left:'rei_confused', right:null },
+{ type:'narr', text:'安定域に収まっている。数値上の異常はほとんどない。\nなのに——消え切っていないものがある。\n\n波形の底に、微かな揺らぎが残っていた。', left:'rei_confused', right:null },
+{ type:'sys', text:'対象者名　——　小海 結衣', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'補正処理はすでに二段階目まで終了している。\nにもかかわらず、感情残留波形だけが——断続的に現れていた。\n\nまるで、消えたはずのものが、底に沈んでいるみたいだった。', left:'rei_confused', right:null },
+{ type:'rei', name:'安曇　零', text:'……再観測、か。', left:'rei_cold', right:null },
+{ type:'narr', text:'独り言は珍しい。\n零は少し驚いてから、案件を自分の確認リストへ移した。', left:'rei_eyes_down', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_corridor', scene:'第三区画　観測施設　廊下', chapter:'第一章　触れすぎた心', bgm:'yui' },
+
+{ type:'narr', text:'第三区画観測施設は、病棟というより静養ラウンジに近い造りをしている。\n廊下には木目調のパネルが使われ、壁面の色は柔らかな灰青で統一されていた。', left:null, right:null },
+{ type:'narr', text:'利用者に「治療されている」と過度に意識させないための設計だ。\n\n零は受付端末に認証を通し、ラウンジ奥へ進んだ。', left:'rei_normal', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第一章　触れすぎた心' },
+
+{ type:'narr', text:'正面の大きな窓から、曇りぎみの空が見える。\n晴れとも雨ともつかない——感情を刺激しすぎない空。', left:null, right:null },
+{ type:'narr', text:'窓辺に、一人の女性が座っていた。\n背筋を伸ばし、膝の上に薄い冊子を開いている。\n\nページは長いこと、めくられていない。', left:null, right:'yui_neutral' },
+{ type:'narr', text:'横顔だけが見えた。やわらかな輪郭。落ち着いた表情。\n年齢は零より少し上に見える。\n\n整っているというだけでは、言い切れない何かがあった。', left:'rei_normal', right:'yui_neutral' },
+
+{ type:'rei', name:'安曇　零', text:'……失礼します。経過確認のため、少しお時間をいただけますか。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'彼女はすぐには振り向かなかった。\n窓の外を見たまま、ほんの少し遅れてこちらへ顔を向ける。', left:'rei_normal', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'はい。大丈夫です。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'narr', text:'静かな声だった。\nたった一言で、零はわずかに違和感を覚えた。\n\n穏やかで、よく整っている。なのに——その穏やかさが、記録上のどの安定状態にも似ていない。', left:'rei_confused', leftDim:false, right:'yui_soft_smile', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'現在の体調と情緒安定の経過を確認します。\n形式的なものですので、あまり構えずにお答えください。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'直近で睡眠障害、食欲低下、強い不安感などはありますか。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'いいえ。眠れていますし、食事も取れています。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'日常活動への支障は。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'今のところはありません。', left:'rei_normal', leftDim:true, right:'yui_neutral', rightDim:false },
+
+{ type:'rei', name:'安曇　零', text:'では、気分の波についてですが。悲嘆、怒り、希死念慮、あるいは——', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'悲しいかどうか、ですか。', left:'rei_confused', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'言葉を引き取るように、彼女が穏やかに言った。\n零は一度だけ、目を上げた。', left:'rei_confused', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……ええ。近い項目です。', left:'rei_normal', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'narr', text:'彼女は少し考えるように視線を落とし、それから小さく微笑んだ。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'yui', name:'小海　結衣', text:'悲しい、とは思います。\n\nただ、それをなくしたいとは思っていません。', left:'rei_normal', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'端末に入力しようとした零の指が、ほんのわずかに止まる。', left:'rei_confused', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……苦痛が継続している場合、安定処理の再調整も可能です。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'はい。', left:'rei_normal', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'感情の固定化は、日常適応に影響することがあります。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうかもしれませんね。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'narr', text:'彼女は頷いた。制度を否定するわけではない。\nだが、受け入れたうえで、その少し外側に立っているようだった。', left:'rei_confused', leftDim:false, right:'yui_soft_smile', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'でも、痛みがあるからわかることも、あるんじゃないでしょうか。', left:'rei_confused', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'零は返答を失う。\n\n本来なら区分できる言葉だった。\n未補正感情への固着。補正抵抗。そう記録すればいい。\n\nそうすればいいはずなのに——胸の奥で、何かが微かに軋んだ。', left:'rei_confused', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_abstract', scene:'', chapter:'' },
+
+{ type:'narr', text:'自分にも、似たようなことを思った覚えがある。\nいつだったのか。誰に向けたものだったのか。\n\nそこだけが霧に包まれていて、感触だけが残っている。', left:null, right:null },
+{ type:'narr', text:'悲しかった。\n何かを失った。\nそれだけは確かで——それ以上が、曖昧だ。', left:'rei_eyes_down', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第一章　触れすぎた心' },
+
+{ type:'yui', name:'小海　結衣', text:'……安曇さん、でしたよね。', left:'rei_confused', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'はい。', left:'rei_normal', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'あなたは、いつもそうやって話すんですね。\nちゃんと整った言葉で。', left:'rei_normal', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'narr', text:'零は少しだけ眉を寄せる。\n責められている感じはしない。\nむしろ——ただ、見つけられてしまったような気分だった。', left:'rei_confused', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'職務上、必要ですので。', left:'rei_cold', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうなんでしょうね。', left:'rei_cold', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'でも、あなた自身は——そこまできれいに整理できていないでしょう？', left:'rei_confused', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'narr', text:'その一言だけで、零の内側にあった何かが、はっきりと揺れた。\n\n返す言葉が、一拍遅れる。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……そのように見えますか。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'はい。\n\n少しだけ、似ているので。', left:'rei_shaken', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'あなたも、触れすぎたんじゃないですか。', left:'rei_shaken', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'narr', text:'零の喉が詰まる。\n\n何に。\nそう聞き返すのは簡単だった。\nだが——聞くまでもなくわかってしまった。', left:'rei_shaken', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'人の痛み。言葉にできない揺れ。消去されたはずの感情の痕跡。\n\n仕事として見てきたはずのもの。\nそれがいつからか——自分の中にまで沈殿している。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'……観測対象に、個人的な感想を持つことは推奨されていません。', left:'rei_cold', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'いつも通りの文面。\nそれなのに、自分で言っていて少し空疎だった。', left:'rei_eyes_down', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうですね。\n\nでも、そういうふうに言う人ほど——ちゃんと残ってしまうんだと思います。', left:'rei_eyes_down', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'rei', name:'安曇　零', text:'……本日の確認は以上です。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'ありがとうございました。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'narr', text:'零は席を立ち、数歩だけ離れてから足を止めた。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'小海さん。あなたは、どうして……', left:'rei_confused', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'問いかけかけて、言葉が途切れる。\n何を訊きたいのか、自分でもうまくわからない。\n\n彼女は急かさず、静かに待っていた。', left:'rei_eyes_down', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……いえ。失礼しました。', left:'rei_eyes_down', leftDim:false, right:'yui_soft_smile', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'また来てくださいますか。', left:'rei_eyes_down', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'必要があれば。', left:'rei_normal', leftDim:false, right:'yui_soft_smile', rightDim:true },
+{ type:'narr', text:'そう答えた声は、わずかにだけ——いつもより平坦ではなかった。', left:'rei_eyes_down', leftDim:false, right:'yui_soft_smile', rightDim:true },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_office', scene:'感情安定管理局　第七監査室', chapter:'第一章　触れすぎた心', bgm:'office' },
+
+{ type:'narr', text:'執務室へ戻ったあとも、零はしばらく報告入力画面を閉じられなかった。', left:'rei_eyes_down', right:null },
+{ type:'sys', text:'入力中……\n\n「顕著な情緒不安定反応なし。補正再調整の必要性は現時点で低い。\nただし定義困難な残留波形あり。経過観察継続を推奨」', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'通常より少し曖昧な表現。\n上司が見れば、おそらく軽く修正を求める程度のものだ。\n\nそれでも零は、その文面を送信した。\n少なくとも今は、彼女を再補正に回したくなかった。', left:'rei_confused', right:null },
+{ type:'narr', text:'白い執務室の静けさは、もう午前中までのそれと同じには思えなかった。\n\n均一で、清潔で、乱れのない空気の底に——\n何か小さな揺れが残っている。', left:'rei_emotional', right:null },
+{ type:'narr', text:'零は無意識に、自分の左胸のあたりへ手をやった。\n\nそこには何もない。\n何もないはずなのに——空白だけが、確かにある。', left:'rei_eyes_down', right:null },
+
+{ type:'chapter-end', num:'第 一 章', title:'触れすぎた心' },
+
+// ══ 第二章 ══════════════════════════════
+{ type:'chapter', num:'第 二 章', title:'静かな再訪' },
+{ type:'fade-in', bg:'bg_office', scene:'感情安定管理局　第七監査室', chapter:'第二章　静かな再訪', bgm:'office' },
+
+{ type:'narr', text:'小海結衣の記録は、翌日になっても保留のままだった。\n\n継続観測。分類未確定。補正再調整の必要性は低い。\n\nそこまではいい。問題は、その先に残っている、説明のつかない揺れだった。', left:'rei_cold', right:null },
+{ type:'narr', text:'本来なら、監査記録に曖昧さを残すべきではない。\n分類は明瞭であるべきだし、誰が見ても同じ結論にたどり着く記述が求められる。\n零自身、これまでずっとそうしてきた。\n\nけれど昨日だけは、それ以上の言葉が置けなかった。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'画面を閉じようとして、また開く。\n同じ波形を二度、三度と見返している自分に気づいても、零はすぐには手を止められなかった。', left:'rei_confused', right:null },
+
+{ type:'rei', name:'同僚', text:'安曇監査官。第三区画、今日も追われるんですか。', left:'rei_confused', right:null },
+{ type:'rei', name:'安曇　零', text:'……ええ。継続して見たほうが精度が上がります。前回の面談結果も、まだ補足が必要でしたので。', left:'rei_cold', right:null },
+
+{ type:'narr', text:'どうしてここまで気になるのか、うまく説明できない。\n継続観測は理由になる。だが、それだけでは足りない気がしていた。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'そこで、ふと別のことを思い出しかけた。\n\n失った人がいる。\nそのことだけは、たしかだった。', left:'rei_confused', right:null },
+{ type:'narr', text:'恋人だった。\n自分にとって大切な人で、その喪失で深く傷ついた。\n\nそこまでは覚えている。\nただ、その人の細部だけが曖昧だった。\n\n顔立ち。声。会話。どんなふうに笑ったのか——思い出そうとすると、そこだけが静かに曇る。', left:'rei_eyes_down', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第二章　静かな再訪', bgm:'yui' },
+
+{ type:'narr', text:'ラウンジの窓辺に、今日も結衣はいた。\n\n零は入口をくぐった瞬間、その姿を無意識に探していた自分に気づく。', left:'rei_normal', right:'yui_neutral' },
+{ type:'yui', name:'小海　結衣', text:'また来てくださったんですね。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'継続観測です。', left:'rei_cold', leftDim:false, right:'yui_soft_smile', rightDim:true },
+{ type:'narr', text:'言い方が少し硬い。自分でもわかった。', left:'rei_confused', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'前回からの変化を確認します。睡眠、食欲、気分の波、日常活動への影響を中心に見ます。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'ちゃんと眠れていますか、って訊かれることには慣れてるんです。\n\nでも、本当に眠れているかって、誰もあまり見ないんですよね。', left:'rei_confused', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……少なくとも、そういうことになっています。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'安曇さんは、「そういうことになっている」っていう言い方をするんですね。', left:'rei_normal', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'職務上、個人的見解は差し挟まないことになっています。', left:'rei_cold', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'でも、そういうふうにきちんと線を引く人ほど、ほんとうはたくさん見てしまっている気がします。', left:'rei_cold', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'yui', name:'小海　結衣', text:'大事なものをなくした人って——\nなくした瞬間より、そのあとで少しずつ静かになる気がするんです。', left:'rei_confused', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'零の呼吸がわずかに浅くなった。', left:'rei_shaken', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……あなたにも、そういうことが。', left:'rei_shaken', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'あるのかもしれません。\nあるいは、そういうものからできているのかもしれませんね。', left:'rei_shaken', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……どういう意味ですか。', left:'rei_confused', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'難しいですね。\n\nきっと、人って、なくしたものや残ってしまったものの形でできていることもあるんじゃないかと思って。', left:'rei_confused', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'narr', text:'それは抽象的で、いくらでも解釈できる言葉だった。\nなのに妙に引っかかる。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'……本日の確認は、以上です。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'ありがとうございました。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'narr', text:'数歩だけ離れてから、零はまた足を止めた。', left:'rei_eyes_down', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'安曇さん。\n\n忘れたいわけじゃないのに、輪郭だけ薄くなっていくことってありますよね。', left:'rei_eyes_down', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'narr', text:'零は、返事ができなかった。\n\nそれはまさに、自分が抱えているものだったから。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……あります。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そういうものを、ずっとひとりで抱えてきたんですね。', left:'rei_shaken', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'その一言で、零の胸の奥に小さな痛みが走る。\n\n普段は気づかないほど薄く閉じていた場所を、静かになぞられたみたいな感覚だった。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……失礼します。', left:'rei_eyes_down', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_smoking', scene:'管理局　喫煙スペース', chapter:'第二章　静かな再訪', bgm:'smoking' },
+
+{ type:'narr', text:'その夜、零は喫煙スペースに立っていた。\n\n夜の管理局は、昼間よりさらに白く静かだ。\n透明な隔壁の向こうに、照度を落とした街の光が遠く浮かんでいる。', left:null, right:null },
+{ type:'narr', text:'零は煙草を一本取り出し、火をつける。\n\n吸い込んだ煙の熱だけが、今ここにいる実感みたいだった。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'何を落ち着かせたいのか、自分でもよくわからない。\nただ、結衣の言葉が肺の奥まで残っている気がした。\n\n零は煙を吐き出す。\n白い煙は空調に吸われ、すぐに形を失った。', left:'rei_eyes_down', right:null },
+
+{ type:'chapter-end', num:'第 二 章', title:'静かな再訪' },
+
+// ══ 第三章 ══════════════════════════════
+{ type:'chapter', num:'第 三 章', title:'観測者の亀裂' },
+{ type:'fade-in', bg:'bg_office', scene:'感情安定管理局　第七監査室', chapter:'第三章　観測者の亀裂', bgm:'office' },
+
+{ type:'narr', text:'それは、数値には出ない種類の疲労だった。\n\n零は午前の監査を終えたあと、端末の前で一度だけ目を閉じた。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'今朝確認した補正対象者のログが、まだ頭のどこかに残っている。\n数字は安定していた。それなのに——', left:'rei_confused', right:null },
+{ type:'sys', text:'「もう大丈夫です」\n\n——波形も声量も乱れていない。\n整っているのに、空洞の音がした。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'閉じたはずの記録が、内側に薄く残る。\n誰かの悲しみ。誰かの諦め。\n言葉になる前に削り取られた感情の縁のようなもの。\n\n以前なら、そこまで入り込まなかった。', left:'rei_emotional', right:null },
+
+{ type:'rei', name:'同僚', text:'安曇監査官、顔色、少し悪くないですか。', left:'rei_emotional', right:null },
+{ type:'rei', name:'安曇　零', text:'問題ありません。', left:'rei_cold', right:null },
+{ type:'narr', text:'反射的に出た言葉だった。', left:'rei_eyes_down', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第三章　観測者の亀裂', bgm:'yui' },
+
+{ type:'narr', text:'気づけば、第三区画へ続く廊下に立っている。\n\nただ確認するだけだ。業務上の妥当性は十分にある。\nだが、その全部を並べたところで、本当の理由を覆いきれないことも、零にはわかっていた。', left:'rei_normal', right:null },
+{ type:'narr', text:'あの人の前だと、自分の中に残っているものの輪郭が少しだけ見える。\nそれが救いなのか危うさなのか、まだ判別はつかない。', left:'rei_confused', right:null },
+
+{ type:'yui', name:'小海　結衣', text:'こんにちは。', left:'rei_normal', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……こんにちは。', left:'rei_normal', leftDim:false, right:'yui_soft_smile', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'今日は、面談の予定ではなかったですよね。', left:'rei_normal', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'近くまで来たので、様子を確認しておこうかと。', left:'rei_normal', leftDim:false, right:'yui_seeing_through', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'最近、少し疲れていませんか。\n\n前より、たくさん聞こえてしまっている感じがします。', left:'rei_confused', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'聞こえる。まさにその感覚だった。\n\n観測記録の中に——本来なら処理単位として切り分けられるはずの感情が、以前より近い距離で入ってくる。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……そういうことは、あります。職務上、接触量が増える時期もありますので。', left:'rei_cold', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そういう意味じゃない気がします。\nもっと、近いんじゃないでしょうか。', left:'rei_cold', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'痛みとか、なくなりきらないものに、です。', left:'rei_cold', leftDim:true, right:'yui_seeing_through', rightDim:false },
+
+{ type:'narr', text:'近すぎる。\nその一語に、零の内側が小さく軋む。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……最近、少し。', left:'rei_shaken', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'零は低く言った。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'以前より、記録が残るんです。閉じたはずのものが、頭の中に残る。数値は安定しているのに、そこにあった感情だけが消えないことがある。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'言ってから、自分で少し驚く。\nこんなふうに職務感覚を言葉にしたのは初めてだった。', left:'rei_eyes_down', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'たぶん、見えてしまうんでしょうね。\n\n消えたことになっているものが。', left:'rei_emotional', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……消えないものを、消えたことにしているだけかもしれません。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'零の口から出たその言葉は、ほとんど独り言に近かった。\n\nそれは制度への違和感を、これまででいちばんはっきりと言葉にした一文だった。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そういうもの、ありますよね。', left:'rei_emotional', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'narr', text:'その言い方は、まるで自分のことも含んでいるようだった。', left:'rei_emotional', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_smoking', scene:'管理局　喫煙スペース', chapter:'第三章　観測者の亀裂', bgm:'smoking' },
+
+{ type:'narr', text:'ラウンジを出たあと、零はそのまま喫煙スペースへ向かった。\n\n煙草に火をつける。\n吸い込んだ煙は少し苦い。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'見えてしまう。消えたことになっているものが。\n\n結衣の言葉が、まだ胸の奥に残っている。\n\n問題は結衣だけではない。自分自身も、もう正常な観測者の側に立ちきれていないのかもしれない。', left:'rei_emotional', right:null },
+
+{ type:'chapter-end', num:'第 三 章', title:'観測者の亀裂' },
+
+// ══ 第四章 ══════════════════════════════
+{ type:'chapter', num:'第 四 章', title:'失われた輪郭' },
+{ type:'fade-in', bg:'bg_office_night', scene:'感情安定管理局　夜の執務室', chapter:'第四章　失われた輪郭', bgm:'core' },
+
+{ type:'narr', text:'思い出せないこと自体は、ずっと前から変わっていなかった。\n\n変わったのは、それを零が初めて気にし始めたことだった。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'業務終了後の執務室は、昼間よりさらに静かだった。\n表示されているのは、職員用の過去参照申請画面——\n個人の面談補助記録、感情負荷推移、補正履歴に接続するための入口だ。', left:'rei_cold', right:null },
+{ type:'narr', text:'申請理由欄は空白のままだった。\n\n見ようとしているのは、整った業務理由だけでは説明できない衝動があるからだ。\n\n恋人のことを思い出そうとすると、いつも同じところで視界が曇る。', left:'rei_confused', right:null },
+
+{ type:'sys', text:'申請理由：自己感情負荷記録の再確認\n継続観測業務への影響確認のため\n\n——送信。', left:'rei_eyes_down', right:null },
+
+{ type:'narr', text:'画面上に、自分の過去ログ一覧が並んだ。\n\n感情負荷の急激な上昇。長期的な悲嘆反応。対人接触量の低下。\n\nそこまでは不思議ではない。それはたぶん、恋人を失った時期なのだろう。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'だが、そのまとまりの中にひとつだけ、妙に浮いた表記があった。', left:'rei_confused', right:null },
+{ type:'sys', text:'個別関連情報：閲覧制限\n参照権限不足\n\n当該情報は現在の参照権限では表示できません。\n\n本操作は監査記録に保存されています。', left:'rei_confused', right:null },
+{ type:'narr', text:'当たり前だ。そんなことは最初からわかっている。\n\nだが、見られないことそのものより——\n\n見られない何かが、自分の喪失記録のすぐそばにある\n\nという事実のほうが、引っかかった。', left:'rei_confused', right:null },
+
+{ type:'narr', text:'面談補助記録を開く。\n\nどこにも恋人の名前はない。\n相手を示す固有情報だけが、驚くほどきれいに抜けていた。', left:'rei_shaken', right:null },
+{ type:'narr', text:'防衛反応なら、細部が思い出せないこと自体は理解できる。\nだが、記録の側までこうも均等に薄いのは、少し不自然だった。', left:'rei_shaken', right:null },
+
+{ type:'narr', text:'窓の向こうの夜色を見る。その暗がりを見ていると、不意にひとつの断片が浮いた。\n\n細い指先。透明なコップ。白っぽい光。\n\n声があったはずなのに、そこだけが抜け落ちる。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'顔が見えない。\n名前が出てこない。\n\nただ、自分がその人を失って、ひどく傷ついたことだけが確かだった。', left:'rei_emotional', right:null },
+
+{ type:'narr', text:'そのとき、小さく通知音が鳴る。\n\n第三区画——小海結衣の定時波形更新。\n\n反射的に、そのログを開いてしまう。', left:'rei_confused', right:null },
+{ type:'narr', text:'結衣の記録を見ていると、自分の中に閉じたままの何かも少しだけ輪郭を持つ。\n\n彼女が何者なのかは、まだわからない。\nただ、彼女の前にいると、自分が見ないままにしてきたものが静かに浮いてくる。', left:'rei_eyes_down', right:null },
+
+{ type:'chapter-end', num:'第 四 章', title:'失われた輪郭' },
+
+// ══ 第五章 ══════════════════════════════
+{ type:'chapter', num:'第 五 章', title:'定義不能のひと' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第五章　定義不能のひと', bgm:'yui' },
+
+{ type:'narr', text:'小海結衣の異常性は、最初からそこにあった。\n\nただ、それを異常だと認識する目が、零の中でようやく揃い始めただけだった。', left:'rei_normal', right:'yui_neutral' },
+
+{ type:'rei', name:'安曇　零', text:'確認したいことがあります。\n\nあなたの記録は、補正後の安定域にあります。再調整の必要も低い。それでも一致率が出ない。毎回、分類未確定で保留される。', left:'rei_cold', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そういうことも、あるんですね。', left:'rei_cold', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'普通はあまりありません。\nあなたは、自分でそれをどう思っているんですか。', left:'rei_cold', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'変だとは思いません。\n\n測れないものがあること自体は、そんなに不自然じゃない気がするんです。', left:'rei_cold', leftDim:true, right:'yui_soft_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'でも、この社会は、そうは考えていません。', left:'rei_cold', leftDim:false, right:'yui_soft_smile', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうですね。少なくとも、表向きは。', left:'rei_cold', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'安曇さんは、最近そういう言い方が増えましたね。', left:'rei_cold', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……自分でも、少しそう思います。', left:'rei_confused', leftDim:false, right:'yui_seeing_through', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'ここにいることを、不自然だと思ったことはありませんか。', left:'rei_normal', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'あります。\n\nでも、外に戻ることを想像すると、もっと輪郭が薄くなる気がするんです。ここにいると、まだ少しだけ、自分がどこにいるのかわかるんです。', left:'rei_normal', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……まるで、ここじゃないと存在を保てないみたいですね。', left:'rei_confused', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうなのかもしれません。', left:'rei_confused', leftDim:true, right:'yui_neutral', rightDim:false },
+
+{ type:'narr', text:'そのとき、端末が小さく振動した。\n\n第三区画長期観測対象の一部について、分類モデル再調整のための補足評価要請。\nその中に、小海結衣のコードがあった。', left:'rei_shaken', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'結衣の記録がいよいよ区画内の通常判断から浮き始めている。\n\n制度の側から見ても、少しずつ"処理しきれないもの"になり始めている。\nそのことに、零ははっきりと焦りを覚えた。', left:'rei_shaken', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'安曇さん。\n\nあなたは、私のことを記録として見ているときと、そうでないときがあります。\n\n今は、どちらですか。', left:'rei_shaken', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'narr', text:'問い返せなかった。\n観測者として見る。対象として扱う。そういう距離を保つべきだった。\n\nけれど今の自分がそれを完全にできているとは、もう思えない。', left:'rei_shaken', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'……わかりません。', left:'rei_emotional', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'それでいいと思います。', left:'rei_emotional', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'narr', text:'その日の夕方、零は上司に呼び止められた。', left:'rei_cold', right:null },
+{ type:'rei', name:'上司', text:'安曇。第三区画の継続観測、ずいぶん持ってるな。小海結衣もその一人か。', left:'rei_cold', right:null },
+{ type:'rei', name:'安曇　零', text:'……そうです。', left:'rei_cold', right:null },
+{ type:'rei', name:'上司', text:'必要性があるなら構わない。ただ、同一対象への接触が増えると記録上は目立つ。\n\n無理はするな。最近少し、見えすぎてる顔をしてる。', left:'rei_cold', right:null },
+{ type:'narr', text:'見えすぎている。\n\nその言い方が、結衣の言葉とどこかで重なる。\n\n制度の側からも。制度の外れにいる人からも。\n零は、自分が立っている位置が少しずつ揺れ始めているのを感じていた。', left:'rei_emotional', right:null },
+
+{ type:'chapter-end', num:'第 五 章', title:'定義不能のひと' },
+
+// ══ 第六章 ══════════════════════════════
+{ type:'chapter', num:'第 六 章', title:'やさしい檻' },
+{ type:'fade-in', bg:'bg_core', scene:'中枢系接続　深部索引', chapter:'第六章　やさしい檻', bgm:'core' },
+
+{ type:'narr', text:'世界の真相は、劇的な形では現れなかった。\n\nそれはむしろ、ずっと前からそこにあったものの輪郭が、\n零の中でようやく結ばれた結果として見えてきた。', left:null, right:null },
+{ type:'narr', text:'きっかけは、監査側からの正式な照会だった。\n\n第三区画長期観測対象・小海結衣に関する継続接触の妥当性確認。\n申請理由の補足提出。自己履歴参照との関連有無。', left:'rei_cold', right:null },
+{ type:'narr', text:'文面はどこまでも整っていた。\n責めるでもなく、ただ手順として問いを置いてくる。\nそれがこの制度のやり方だった。', left:'rei_eyes_down', right:null },
+
+{ type:'narr', text:'その夜、零は中枢系記録へ接続した。\n\n深部索引の画面は、通常ログよりさらに無機質だった。', left:'rei_cold', right:null },
+{ type:'sys', text:'識別コード　因子分類　観測目的\n再現環境　感情発達イベント\n喪失誘発試行……', left:'rei_cold', right:null },
+{ type:'narr', text:'零は最初、その文言の意味を理解できなかった。\nいや、理解したくなかったのかもしれない。', left:'rei_confused', right:null },
+{ type:'sys', text:'感情再現環境：継続稼働中\n人格モデル系列：AZ-0\n喪失反応観測イベント：実施済\n関連個体情報：再構成・制限', left:'rei_shaken', right:null },
+{ type:'narr', text:'AZ-0。\n\n零。零度。\n\n自分の名前の底にあったものが、そこで急に冷たく実体を持つ。', left:'rei_shaken', right:null },
+
+{ type:'narr', text:'この世界は、人間の感情を再現・解析するために構築された閉鎖環境。\n\n社会制度、関係性、喪失、接触、回復過程まで含めて、\n感情モデルの挙動を観測するために配置されている。\n\n零自身もまた、その中で構築された人格モデル。', left:'rei_shaken', right:null },
+{ type:'narr', text:'恋人を失った過去も、深い悲嘆反応を発生させるための観測イベントのひとつ。\n\n零はそこで、しばらく何も考えられなくなった。', left:'rei_emotional', right:null },
+
+{ type:'narr', text:'失った事実は本物のようにあった。\n苦しかった。何も手につかないほど傷ついた。\nその痛みの感覚だけは、今でも体のどこかに残っている。\n\nけれど、その起点が観測のために置かれたものだったとしたら——\n\n自分の悲しみは、何だったのだろう。', left:'rei_emotional', right:null },
+
+{ type:'narr', text:'別の索引が目に入る。\n\n小海結衣。\n\n通常個体系列ではない。', left:'rei_confused', right:null },
+{ type:'sys', text:'削除対象感情残滓\n再統合失敗\n環境内発生\n定義不能', left:'rei_shaken', right:null },
+{ type:'narr', text:'彼女は、感情モデルとして設計された存在ではなかった。\n\nこの世界が切り捨て、削除し、閉じたはずの感情の残滓が、\n環境内部で蓄積し、自己整合を持って生まれた例外。\n\nつまり彼女は、失敗作であり、誤差であり、同時に——\nこの世界が規定しきれなかったものそのものだった。', left:'rei_emotional', right:null },
+
+{ type:'narr', text:'この世界はやさしい。それは事実だった。\n\n強すぎる痛みは小さくされる。生きづらさは補正される。\n感情の揺れは整えられ、誰も過度に傷つかないよう配慮されている。\n\nけれど同時に、閉じている。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'理解しきれないもの。消したくない痛み。意味にならない執着。\n\nそういうものは、この世界では「終わらせるべき状態」として扱われる。', left:'rei_emotional', right:null },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_smoking', scene:'管理局　喫煙スペース', chapter:'第六章　やさしい檻', bgm:'smoking' },
+
+{ type:'narr', text:'零はその夜、ほとんど無意識に喫煙スペースへ向かった。\n\n煙草に火をつける。最初の火はうまくつかなかった。\n二度目でようやく小さな炎が立ち上がり、先端が赤く染まる。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'失った恋人のことを、零は覚えているつもりでいた。\n好きだったのだろう。大事だったのだろう。\n失ったとき、ひどく苦しかった。\n\nだが、顔は曖昧だった。', left:'rei_emotional', right:null },
+{ type:'narr', text:'作られた痛みだったとして。\n仕組まれた喪失だったとして。\n\nそれでも、苦しかったことまで嘘になるのだろうか。', left:'rei_emotional', right:null },
+{ type:'rei', name:'安曇　零', text:'……じゃあ、あれは何だったんだよ。', left:'rei_emotional', right:null },
+{ type:'narr', text:'声に出しても、答えるものはいない。\n\nもし全部が作りものだったとしても。\n彼女に会いたいと思ったことだけは、もう嘘にしたくなかった。', left:'rei_eyes_down', right:null },
+{ type:'narr', text:'零は煙草を灰皿に押しつけ、喫煙スペースを出た。', left:'rei_determined', right:null },
+
+{ type:'chapter-end', num:'第 六 章', title:'やさしい檻' },
+
+{ type:'fade-out' },
+{ type:'fade-in', bg:'bg_lounge', scene:'第三区画　観測施設ラウンジ', chapter:'第六章　やさしい檻' },
+
+{ type:'narr', text:'ラウンジには、結衣がいた。\n夜の曖昧な光を背に、いつもと変わらない静けさで座っている。\n\n零が近づくと、結衣は顔を上げた。', left:'rei_determined', right:'yui_neutral' },
+{ type:'yui', name:'小海　結衣', text:'知ってしまったんですね。', left:'rei_determined', leftDim:true, right:'yui_seeing_through', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'……全部じゃない。でも、充分だった。', left:'rei_determined', leftDim:false, right:'yui_seeing_through', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'切り捨てられた感情の残滓。削除対象。環境内発生。定義不能。\n\nそんなふうに書いてあった。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そんなふうに書いてありましたか。', left:'rei_determined', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'あなたは、最初から知ってたのか。', left:'rei_determined', leftDim:false, right:'yui_slightly_sad', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'全部ではありません。でも、自分がここにうまく収まっていないことは、ずっとわかっていました。', left:'rei_determined', leftDim:true, right:'yui_neutral', rightDim:false },
+
+{ type:'rei', name:'安曇　零', text:'この世界は、やさしいよな。\n\n痛みを小さくしてくれる。苦しみを整えてくれる。誰も壊れないようにできてる。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'はい。', left:'rei_determined', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'でも、そのやさしさの中に残れないものがある。\n\n檻みたいだ。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'はい。', left:'rei_determined', leftDim:true, right:'yui_soft_smile', rightDim:false },
+
+{ type:'rei', name:'安曇　零', text:'……俺も、作られたものだった。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'narr', text:'その言葉を口にした瞬間、体の奥で何かが軋んだ。\n\n零は初めて、丁寧語ではなく自分の声でそれを言った。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'そうかもしれません。\n\nでも、感じたことまで全部なくなるんでしょうか。', left:'rei_determined', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+
+// ══ 第七章 ══════════════════════════════
+{ type:'chapter', num:'第 七 章', title:'選択' },
+{ type:'fade-in', bg:'bg_core', scene:'中枢系　観測通路', chapter:'第七章　選択', bgm:'core' },
+
+{ type:'narr', text:'中枢側の判断は早かった。', left:null, right:null },
+{ type:'sys', text:'小海結衣　再分類不能\n継続観測による回収効率低\n環境内残留リスク高\n\n削除処理へ移行', left:null, right:null },
+{ type:'narr', text:'その通知を見た瞬間、零の中で何かが決定的に反転した。\n\n結衣は記録上の誤差ではない。\nこの世界が切り捨てたものの集積だ。', left:'rei_determined', right:null },
+
+{ type:'rei', name:'安曇　零', text:'世界を落とす。そのために、補正システムの向きを変える。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'世界を落とすには、補正システムの向きを変えないといけません。', left:'rei_determined', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'narr', text:'補正システムは、本来なら逸脱した感情を収束させ、安定域へ戻すためのものだ。\n\nだが逆に言えば——これまで削除・収束・圧縮されてきた規定不能な感情残滓は、すべてどこかに蓄積されている。\n\nそれを、元の環境へ逆流させる。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'rei', name:'安曇　零', text:'そうすれば、維持できなくなる。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'はい。', left:'rei_determined', leftDim:true, right:'yui_neutral', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'そのとき、俺たちもどうなるかわからない。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'わかりません。\n\nでも、ここに残るほうが、もっと静かに消えていく気がします。', left:'rei_determined', leftDim:true, right:'yui_slightly_sad', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'じゃあ——\n\n終わり方を選ぼう。', left:'rei_determined', leftDim:false, right:'yui_tearful_smile', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'……はい。', left:'rei_determined', leftDim:true, right:'yui_tearful_smile', rightDim:false },
+
+{ type:'chapter-end', num:'第 七 章', title:'選択' },
+
+// ══ 終章 ══════════════════════════════
+{ type:'chapter', num:'終　章', title:'やさしい檻の外へ' },
+{ type:'fade-in', bg:'bg_core', scene:'中枢系接続', chapter:'終章　やさしい檻の外へ', bgm:'end' },
+
+{ type:'narr', text:'中枢系への接続は、思っていたより静かに始まった。\n\n零が監査系の権限で封鎖を一段ずつ外し、結衣が残滓群への接続点を探る。', left:'rei_determined', right:'yui_neutral' },
+{ type:'narr', text:'端末画面には無数の識別列と波形が並び、\n削除済、収束済、統合不能の表示が流れていく。\n\n人の悲しみ。怒り。執着。忘れられなかったもの。意味にならなかった痛み。\n\nすべて、整えるために切り捨てられてきたものだった。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+
+{ type:'yui', name:'小海　結衣', text:'……ああ。', left:'rei_determined', leftDim:true, right:'yui_pained', rightDim:false },
+{ type:'narr', text:'その声は初めて、はっきり苦しそうだった。', left:'rei_determined', leftDim:true, right:'yui_pained', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'大丈夫か。', left:'rei_determined', leftDim:false, right:'yui_pained', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'大丈夫ではないかもしれません。\nでも、これが私なんだと思います。', left:'rei_determined', leftDim:true, right:'yui_pained', rightDim:false },
+
+{ type:'narr', text:'零は画面を見る。\nそこにあるのは、世界が"不要"として処理してきたものの集積だった。\n\n自分の喪失も、そのどこかに繋がっているのかもしれない。\n思い出せない名前も、輪郭の薄い痛みも、ここを通って静かに整えられたのかもしれない。', left:'rei_determined', leftDim:false, right:'yui_pained', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'始める。', left:'rei_determined', leftDim:false, right:'yui_neutral', rightDim:true },
+{ type:'sys', text:'補正逆流\n残滓解放\n環境整合優先度の解除\n\n——職員権限逸脱。中枢安定性低下。環境維持率の急減。', left:'rei_determined', right:null },
+
+{ type:'narr', text:'画面一面に警告表示が流れる。\nそれでも、もう手は止まらない。\n\n白い光がわずかに脈打つ。遠くで警告音が鳴り始める。', left:'rei_determined', right:null },
+{ type:'narr', text:'だがその崩れ方は、派手ではなかった。\nむしろ、整いすぎたものが静かに軸をずらしていく感覚に近い。\n\n執務室の白が、少しだけ濁る。\n廊下の直線が、ほんのわずかに揺れる。\nラウンジの窓の向こうの光が、均質さを失う。', left:null, right:null },
+
+{ type:'yui', name:'小海　結衣', text:'零。', left:'rei_determined', leftDim:true, right:'yui_tearful_smile', rightDim:false },
+{ type:'narr', text:'零は振り向く。\n\n結衣の表情は静かだった。\n穏やかで、やわらかくて——でも泣きそうに見えた。', left:'rei_determined', leftDim:false, right:'yui_tearful_smile', rightDim:true },
+
+{ type:'rei', name:'安曇　零', text:'全部が作りものだったとしても。\n\n結衣に会いたいと思ったことだけは、もう嘘にしたくない。', left:'rei_determined', leftDim:false, right:'yui_tearful_smile', rightDim:true },
+{ type:'narr', text:'結衣は一瞬だけ目を見開く。\nそれから、ひどく静かに笑った。', left:'rei_determined', leftDim:true, right:'yui_tearful_smile', rightDim:false },
+{ type:'yui', name:'小海　結衣', text:'私もです。', left:'rei_determined', leftDim:true, right:'yui_tearful_smile', rightDim:false },
+
+{ type:'narr', text:'次の瞬間、世界の維持波形が崩れた。\n\n白い執務室が、輪郭からほどけていく。\n整いきった廊下が、少しずつ意味を失う。\n静養ラウンジの窓辺も、曖昧な光の膜に溶けていく。', left:null, right:null },
+{ type:'narr', text:'零は、その崩壊の中で自分の胸の奥にあった空白へようやく触れる。\n\n恋人を失ったこと。その痛み。\n観測のための出来事だったのかもしれない。\n\nそれでも苦しかったことだけは、たしかだった。', left:'rei_determined', right:null },
+{ type:'narr', text:'結衣に惹かれたこともまた、設計の延長だったのかもしれない。\nそれでも今、彼女を失いたくないと思っている。\n\nその感情だけは、自分のものとして選びたかった。', left:'rei_determined', right:null },
+
+{ type:'rei', name:'安曇　零', text:'怖いか。', left:'rei_determined', leftDim:false, right:'yui_tearful_smile', rightDim:true },
+{ type:'yui', name:'小海　結衣', text:'少し。\n\nでも——ここじゃない場所があるなら、見てみたいです。', left:'rei_determined', leftDim:true, right:'yui_tearful_smile', rightDim:false },
+{ type:'rei', name:'安曇　零', text:'俺もだ。', left:'rei_determined', leftDim:false, right:'yui_tearful_smile', rightDim:true },
+
+{ type:'narr', text:'崩壊の先に何があるのか、零にはわからない。\n\nただ、もう白く整えられた檻の内側ではないことだけはわかった。', left:null, right:null },
+{ type:'narr', text:'理解しきれないものが残る。\n消しきれない痛みがある。\nそれでもなお、心はそこにある。\n\n零は結衣へ手を伸ばした。', left:'rei_determined', right:'yui_tearful_smile' },
+{ type:'narr', text:'その手が触れたかどうかは、最後までわからなくてもいい。\n\nただ、その瞬間だけは——\nどんな記録にも、分類できなかった。', left:null, right:null },
+
+{ type:'end' },
+];
+
+// ════════════════════════════════════════
+//  ENGINE
+// ════════════════════════════════════════
+let idx = 0, started = false, busy = false;
+let autoMode = false, autoTimer = null;
+
+const bgEl          = document.getElementById('bg');
+const fadeEl        = document.getElementById('fade');
+const sceneEl       = document.getElementById('scene-label');
+const chapterLabelEl= document.getElementById('chapter-label');
+const textboxEl     = document.getElementById('textbox');
+const nameEl        = document.getElementById('nameplate');
+const textEl        = document.getElementById('text-content');
+const progEl        = document.getElementById('progress-fill');
+const titleEl       = document.getElementById('title-screen');
+const endEl         = document.getElementById('end-screen');
+const chapterCard   = document.getElementById('chapter-card');
+const menuBtn       = document.getElementById('menu-btn');
+const autoIndicator = document.getElementById('auto-indicator');
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function setScene(t){ sceneEl.textContent = t||''; sceneEl.classList.toggle('show', !!t); }
+function setChapterLabel(t){ chapterLabelEl.textContent = t||''; chapterLabelEl.classList.toggle('show', !!t); }
+function setProgress(){ progEl.style.width = Math.round((idx/(script.length-1))*100)+'%'; }
+
+async function showChapterCard(num, title) {
+  document.getElementById('cc-num').textContent = num;
+  document.getElementById('cc-title').textContent = title;
+  document.getElementById('cc-end').textContent = '';
+  chapterCard.classList.add('show');
+  await sleep(2500);
+  chapterCard.classList.remove('show');
+  await sleep(700);
+}
+
+async function showChapterEnd(num, title) {
+  document.getElementById('cc-num').textContent = num;
+  document.getElementById('cc-title').textContent = title;
+  document.getElementById('cc-end').textContent = '— 了 —';
+  chapterCard.classList.add('show');
+  await sleep(2500);
+  chapterCard.classList.remove('show');
+  await sleep(700);
+}
+
+async function applyStep(step) {
+  busy = true;
+
+  if (step.type === 'chapter') {
+    await showChapterCard(step.num, step.title);
+    busy = false;
+    return;
+  }
+
+  if (step.type === 'chapter-end') {
+    await showChapterEnd(step.num, step.title);
+    busy = false;
+    return;
+  }
+
+  if (step.type === 'fade-out') {
+    clearSprites();
+    fadeEl.classList.add('active');
+    await sleep(680);
+    textboxEl.classList.remove('show');
+    nameEl.classList.remove('show');
+    setScene('');
+    busy = false;
+    return;
+  }
+
+  if (step.type === 'fade-in') {
+    if (step.bg) bgEl.style.backgroundImage = `url('${IMG[step.bg]}')`;
+    if (step.bgm) playBgm(step.bgm);
+    if (step.scene !== undefined) setScene(step.scene);
+    if (step.chapter !== undefined) setChapterLabel(step.chapter);
+    await sleep(80);
+    fadeEl.classList.remove('active');
+    await sleep(720);
+    busy = false;
+    return;
+  }
+
+  if (step.type === 'end') {
+    await sleep(400);
+    textboxEl.classList.remove('show');
+    nameEl.classList.remove('show');
+    clearSprites();
+    await sleep(800);
+    endEl.classList.add('show');
+    busy = false;
+    return;
+  }
+
+  // スプライト
+  if (step.left !== undefined) setSprite('left',  step.left,  step.leftDim);
+  if (step.right !== undefined) setSprite('right', step.right, step.rightDim);
+
+  // テキスト
+  textEl.className = '';
+  if      (step.type==='narr') textEl.classList.add('narr');
+  else if (step.type==='rei')  textEl.classList.add('rei');
+  else if (step.type==='yui')  textEl.classList.add('yui');
+  else if (step.type==='sys')  textEl.classList.add('sys');
+  textEl.textContent = step.text || '';
+
+  // 名前欄
+  if (step.type === 'narr') {
+    nameEl.classList.remove('show'); nameEl.className = '';
+  } else if (step.type === 'sys') {
+    nameEl.className = 'sys-name show'; nameEl.textContent = 'SYSTEM LOG';
+  } else {
+    nameEl.textContent = step.name || '';
+    nameEl.className = (step.type === 'yui' ? 'yui ' : '') + 'show';
+  }
+
+  // バックログ
+  if (step.text) addLog(step.name || (step.type === 'narr' ? '' : 'SYSTEM'), step.text, step.type);
+
+  textboxEl.classList.add('show');
+  busy = false;
+
+  // オートモード
+  if (autoMode) {
+    const delay = [0, 4000, 3000, 2200, 1600, 1000][config.autoSpeed] || 2000;
+    autoTimer = setTimeout(() => { if (autoMode) advance(); }, delay + (step.text?.length || 0) * 40);
+  }
+}
+
+async function advance() {
+  if (busy) return;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+
+  if (!started) {
+    started = true;
+    playBgm('title');
+    titleEl.classList.add('hidden');
+    menuBtn.style.display = 'block';
+    await sleep(900);
+    await applyStep(script[idx]);
+    return;
+  }
+
+  idx++;
+  if (idx >= script.length) return;
+  setProgress();
+
+  const step = script[idx];
+  if (step.type === 'fade-out' || step.type === 'fade-in' || step.type === 'chapter' || step.type === 'chapter-end' || step.type === 'end') {
+    await applyStep(step);
+    if (step.type !== 'end') {
+      idx++;
+      if (idx < script.length) { setProgress(); await applyStep(script[idx]); }
+    }
+  } else {
+    await applyStep(step);
+  }
+}
+
+function toggleAuto() {
+  autoMode = !autoMode;
+  autoIndicator.classList.toggle('show', autoMode);
+  if (autoMode && !busy) advance();
+}
+
+function startGame() {
+  hideOverlay('load-overlay');
+  advance();
+}
+
+function goTitle() {
+  // リセット
+  idx = 0; started = false; busy = false; autoMode = false;
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+  endEl.classList.remove('show');
+  textboxEl.classList.remove('show');
+  nameEl.classList.remove('show');
+  fadeEl.classList.remove('active');
+  clearSprites();
+  setScene('');
+  setChapterLabel('');
+  progEl.style.width = '0%';
+  bgEl.style.backgroundImage = '';
+  backlog = [];
+  chapterCard.classList.remove('show');
+  stopBgm();
+  titleEl.classList.remove('hidden');
+  playBgm('title');
+  hideOverlay('menu-overlay');
+}
+
+// ── キー・クリック操作 ──
+document.getElementById('stage').addEventListener('click', e => {
+  // オーバーレイやボタンが開いてたら無視
+  const overlaysOpen = document.querySelectorAll('.overlay.show').length > 0;
+  if (overlaysOpen) return;
+  if (e.target.closest('#menu-btn')) return;
+  if (e.target.closest('#end-screen')) return;
+  if (e.target.closest('#title-screen')) return;
+  advance();
+});
+
+document.addEventListener('keydown', e => {
+  const overlaysOpen = document.querySelectorAll('.overlay.show').length > 0;
+  if (['Space','Enter','ArrowRight'].includes(e.code) && !overlaysOpen) {
+    e.preventDefault();
+    advance();
+  }
+  if (e.code === 'KeyA' && !overlaysOpen) toggleAuto();
+  if (e.code === 'KeyS' && !overlaysOpen) switchToSave();
+  if (e.code === 'KeyL' && !overlaysOpen) switchToLoad();
+  if (e.code === 'Escape') {
+    document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show'));
+  }
+});
+
+// ── 初期化 ──
+menuBtn.style.display = 'none';
+loadConfig();
+renderSaveSlots();
+renderLoadSlots();
+
+// タイトル画面クリックでBGM開始（autoplay制限対策）
+document.getElementById('title-screen').addEventListener('click', () => {
+  if (currentBgm !== 'title') playBgm('title');
+}, { once: false });
+
+// 初回試行（許可されていれば流れる）
+playBgm('title');
+</script>
+</body>
+</html>
